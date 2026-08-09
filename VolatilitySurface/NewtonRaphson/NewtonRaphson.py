@@ -23,7 +23,7 @@ def NewtonRaphson(S, K, T, r, Cm):
     '''
     Uses the Newton Raphson method (on the Black Scholes model) to iteratively solve for IV
     '''
-    IV = 0.20 #initial guess
+    IV = 0.25 #initial guess
     tolerance = 0.000001
     max_iterations = 100
 
@@ -36,8 +36,11 @@ def NewtonRaphson(S, K, T, r, Cm):
             return IV
 
         Vega = vega(S, d1, T)
+        
         if Vega == 0:
             raise ValueError("Vega is zero; Newton-Raphson cannot continue")
+        
+
         IV = step(IV, E, Vega)
     
     raise ValueError("NewtonRaphson() failed to converge")

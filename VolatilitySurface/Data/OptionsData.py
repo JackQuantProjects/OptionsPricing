@@ -3,12 +3,22 @@ import numpy as np
 import pandas as pd
 from NewtonRaphson.NewtonRaphson import NewtonRaphson
 from datetime import datetime
+import matplotlib
+matplotlib.use("QtAgg")
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
 
 #minimum time till expiration to avoid extremely small vegas
 MIN_T = 7
 
-symbol = "AAPL"
+symbol = "AMZN"
 ticker = yf.Ticker(symbol)
+
+def spotPrice(): # underlying price
+    price = ticker.history(period="1d")["Close"].iloc[-1]
+    return price
+
+spot = spotPrice()
 
 x = []  # maturity
 y = []  # strike
@@ -22,16 +32,10 @@ def timeTillExpiration(date):
     
     return (expiry_date - today).total_seconds() / (365 * 24 * 60 * 60)
 
-
-def spotPrice(): # underlying price
-    price = ticker.history(period="1d")["Close"].iloc[-1]
-    return price
-
 def filterCalls(calls):
     '''
     removes the strikes less than 70% of the spot and more than 130% of the spot
     '''
-    spot = spotPrice()
 
     lower = 0.9 * spot
     upper = 1.1 * spot
@@ -43,7 +47,7 @@ def filterCalls(calls):
     return filtered_calls
 
 def calcVolatility(call, T):
-    S = spotPrice()
+    S = spot
     K = call["strike"]
     r = 0.04
     Cm = (call["bid"] + call["ask"]) / 2
@@ -64,7 +68,6 @@ def build(call, expiry, T):
 
     K = call["strike"] # y
     IV = calcVolatility(call, T) # z
-    
     x.append(T)
     y.append(K)
     z.append(IV)
@@ -90,13 +93,21 @@ def expiriesIteration(expiries):
         calls = filterCalls(chain.calls)
 
         for index, call in calls.iterrows():
-            
-            build(call, expiry, T)
+            try:
+                build(call, expiry, T)
+            except ValueError:
+                print("vega most likely zero continuing")
+                continue
 
 def buildSurface():
     expiry_list = expiries()
     expiriesIteration(expiry_list)
     
-    print(x)
-    print(y)
-    print(z)
+    #print(x)
+    #print(y)
+    #print(z)
+
+    return np.array(x), np.array(y), np.array(z)
+
+
+
