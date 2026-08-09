@@ -1,4 +1,4 @@
-from VolatilitySurface.BlackScholes_.BlackScholes import BlackScholes, d1_
+from BlackScholes_.BlackScholes import BlackScholes, d1_
 import math
 
 def normal_pdf(x):
