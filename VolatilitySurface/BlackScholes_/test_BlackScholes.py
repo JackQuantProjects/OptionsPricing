@@ -1,7 +1,6 @@
 import pytest
 
-from BlackScholes import d1_, d2_, N, BlackScholes
-
+from VolatilitySurface.BlackScholes_ import d1_, d2_, N, BlackScholes
 
 def test_d1():
     result = d1_(100, 100, 1, 0.05, 0.20)
