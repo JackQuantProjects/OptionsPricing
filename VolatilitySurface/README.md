@@ -2,7 +2,7 @@
 
 ## Volatility Surface
 
-![Volatility Surface(./Evidence/Surface.png)
+![Volatility Surface](./Evidence/Surface.png)
 
 ## Smoothed Volatility Surface
 
