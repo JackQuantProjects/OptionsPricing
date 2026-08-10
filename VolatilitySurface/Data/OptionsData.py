@@ -11,11 +11,12 @@ from scipy.interpolate import griddata
 #minimum time till expiration to avoid extremely small vegas
 MIN_T = 7
 
-symbol = "AMZN"
+symbol = "AAPL"
 ticker = yf.Ticker(symbol)
 
 def spotPrice(): # underlying price
     price = ticker.history(period="1d")["Close"].iloc[-1]
+    print(price)
     return price
 
 spot = spotPrice()
@@ -36,15 +37,32 @@ def filterCalls(calls):
     '''
     removes the strikes less than 70% of the spot and more than 130% of the spot
     '''
+    
+    lower = 0.7 * spot
+    upper = 1.3 * spot
 
-    lower = 0.9 * spot
-    upper = 1.1 * spot
-
-    filtered_calls = calls[
+    strike_filtered = calls[
         (calls["strike"] >= lower) &
         (calls["strike"] <= upper)
     ]
-    return filtered_calls
+
+    bid_filtered = strike_filtered[
+        strike_filtered["bid"] > 0
+    ]
+
+    ask_filtered = bid_filtered[
+        bid_filtered["ask"] > 0
+    ]
+
+    '''
+    print(
+        f"Original: {len(calls)} | "
+        f"Strike: {len(strike_filtered)} | "
+        f"Bid: {len(bid_filtered)} | "
+    )
+    '''
+
+    return ask_filtered
 
 def calcVolatility(call, T):
     S = spot
@@ -89,7 +107,7 @@ def expiriesIteration(expiries):
 
         #get the options with the current expiry
         chain = ticker.option_chain(expiry)
-
+        
         calls = filterCalls(chain.calls)
 
         for index, call in calls.iterrows():
